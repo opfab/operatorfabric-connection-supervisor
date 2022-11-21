@@ -1,0 +1,13 @@
+{
+    "opfab": {
+      "login": "admin",
+      "password": "test",
+      "consultationUrl": "http://localhost:2002/cards/connections",
+      "publicationUrl" : "localhost:2102",
+      "getTokenUrl" : "http://localhost:2002/auth/token",
+      "processNameForAlerting" : "defaultProcess",
+      "stateNameForAlerting" : "message"
+    },
+    "usersToSupervise" : ["operator1_fr"],
+    "secondsBetweenConnectionChecks" : 10000
+ }
