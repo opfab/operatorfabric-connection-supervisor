@@ -14,7 +14,7 @@ const logFormat = winston.format.combine(
 
 const transport = new DailyRotateFile({
   filename: config.get("logConfig.logFolder") + config.get("logConfig.logFile"),
-  datePattern: "YYYY-MM-DD-HH",
+  datePattern: "YYYY-MM-DD",
   zippedArchive: true,
   maxSize: "20m",
   maxFiles: "14d",
