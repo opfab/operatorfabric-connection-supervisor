@@ -12,7 +12,6 @@
       "publisher":"publisher_test",
       "processVersion":"1",
       "process":"defaultProcess",
-      "processInstanceId":"user",
       "state":"messageState",
       "severity":"ALARM",
       "title":{"key":"messageState.title"},
@@ -26,5 +25,7 @@
       "logLevel" : "info"
   },
     "usersToSupervise" : ["operator1_fr","operator2_fr"],
-    "secondsBetweenConnectionChecks" : 10000
+    "secondsBetweenConnectionChecks" : 10000,
+    "nbOfDisconnectionToSendFirstCard" : 3,
+    "nbOfDisconnectionToSendSecondCard" : 10
  }

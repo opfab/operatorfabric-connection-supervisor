@@ -40,4 +40,10 @@ export default class UserStates {
     }
     return notConnected;
   }
+
+  reset() {
+    this.#usersToSupervise.forEach((user) =>
+      this.#consecutiveTimeUserNotConnected.set(user, 0)
+    );
+  }
 }

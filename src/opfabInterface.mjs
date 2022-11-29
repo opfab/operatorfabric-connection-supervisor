@@ -100,6 +100,7 @@ export default class OpfabInterface  {
         await this.#getToken();
         const card = Object.assign({} ,this.#cardTemplate);
         card.startDate = new Date().valueOf();
+        card.processInstanceId = disconnectedUser;
         card.data =  {"message": `L'utilisateur  ${disconnectedUser} n'est pas connecté depuis plus de 3 minutes`};
         const request = {
             method :'post',
