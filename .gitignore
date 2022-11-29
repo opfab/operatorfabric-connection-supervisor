@@ -78,7 +78,7 @@ classes
 # Opfab specific
 test/node_modules
 src/node_modules
-
+logs
 
 
 # MacOS metadata files

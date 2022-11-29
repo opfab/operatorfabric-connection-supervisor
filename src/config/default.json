@@ -1,13 +1,30 @@
 {
     "opfab": {
-      "login": "admin",
+      "login": "publisher_test",
       "password": "test",
       "consultationUrl": "http://localhost:2002/cards/connections",
-      "publicationUrl" : "localhost:2102",
+      "publicationUrl" : "http://localhost:2102/cards",
       "getTokenUrl" : "http://localhost:2002/auth/token",
       "processNameForAlerting" : "defaultProcess",
-      "stateNameForAlerting" : "message"
+      "stateNameForAlerting" : "messageState"
     },
-    "usersToSupervise" : ["operator1_fr"],
+    "cardTemplate" : {
+      "publisher":"publisher_test",
+      "processVersion":"1",
+      "process":"defaultProcess",
+      "processInstanceId":"user",
+      "state":"messageState",
+      "severity":"ALARM",
+      "title":{"key":"messageState.title"},
+      "summary":{"key":"messageState.summary"},
+      "userRecipients": ["operator1_fr"],
+      "data" : {"message": "user disconnected"}
+  },
+  "logConfig": {
+      "logFolder": "../logs/",
+      "logFile": "OpfabSup-%DATE%.log",
+      "logLevel" : "info"
+  },
+    "usersToSupervise" : ["operator1_fr","operator2_fr"],
     "secondsBetweenConnectionChecks" : 10000
  }
