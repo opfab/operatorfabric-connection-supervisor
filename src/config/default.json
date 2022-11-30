@@ -1,31 +1,34 @@
 {
-    "opfab": {
-      "login": "publisher_test",
-      "password": "test",
-      "consultationUrl": "http://localhost:2002/cards/connections",
-      "publicationUrl" : "http://localhost:2102/cards",
-      "getTokenUrl" : "http://localhost:2002/auth/token",
-      "processNameForAlerting" : "defaultProcess",
-      "stateNameForAlerting" : "messageState"
-    },
-    "cardTemplate" : {
-      "publisher":"publisher_test",
-      "processVersion":"1",
-      "process":"defaultProcess",
-      "state":"messageState",
-      "severity":"ALARM",
-      "title":{"key":"messageState.title"},
-      "summary":{"key":"messageState.summary"},
-      "userRecipients": ["operator1_fr"],
-      "data" : {"message": "user disconnected"}
+  "opfab": {
+    "login": "publisher_test",
+    "password": "test",
+    "consultationUrl": "http://localhost:2002/cards/connections",
+    "publicationUrl": "http://localhost:2102/cards",
+    "getTokenUrl": "http://localhost:2002/auth/token",
+    "processNameForAlerting": "defaultProcess",
+    "stateNameForAlerting": "messageState"
+  },
+  "cardTemplate": {
+    "publisher": "publisher_test",
+    "processVersion": "1",
+    "process": "defaultProcess",
+    "state": "messageState",
+    "severity": "ALARM",
+    "title": { "key": "messageState.title" },
+    "summary": { "key": "messageState.summary" },
+    "data": { "message": "user disconnected" }
   },
   "logConfig": {
-      "logFolder": "../logs/",
-      "logFile": "OpfabSup-%DATE%.log",
-      "logLevel" : "info"
+    "logFolder": "../logs/",
+    "logFile": "OpfabSup-%DATE%.log",
+    "logLevel": "info"
   },
-    "usersToSupervise" : ["operator1_fr","operator2_fr"],
-    "secondsBetweenConnectionChecks" : 10000,
-    "nbOfDisconnectionToSendFirstCard" : 3,
-    "nbOfDisconnectionToSendSecondCard" : 10
- }
+  "usersToSupervise": [
+    { "login": "operator1_fr", "supervisors": ["operator2_fr"] },
+    { "login": "operator2_fr", "supervisors": ["operator1_fr"] }
+  ],
+  "secondsBetweenConnectionChecks": 10000,
+  "nbOfConsecutiveNotConnectedToSendFirstCard": 3,
+  "nbOfConsecutiveNotConnectedToSendSecondCard": 10,
+  "adminPort" : 3000
+}

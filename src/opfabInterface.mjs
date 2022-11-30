@@ -96,11 +96,12 @@ export default class OpfabInterface  {
         });
     };
 
-    async sendCard(disconnectedUser) {
+    async sendCard(disconnectedUser,userRecipients) {
         await this.#getToken();
         const card = Object.assign({} ,this.#cardTemplate);
         card.startDate = new Date().valueOf();
         card.processInstanceId = disconnectedUser;
+        card.userRecipients = userRecipients;
         card.data =  {"message": `L'utilisateur  ${disconnectedUser} n'est pas connecté depuis plus de 3 minutes`};
         const request = {
             method :'post',
