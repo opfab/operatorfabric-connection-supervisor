@@ -4,19 +4,14 @@
     "password": "test",
     "consultationUrl": "http://localhost:2002/cards/connections",
     "publicationUrl": "http://localhost:2102/cards",
-    "getTokenUrl": "http://localhost:2002/auth/token",
-    "processNameForAlerting": "defaultProcess",
-    "stateNameForAlerting": "messageState"
+    "getTokenUrl": "http://localhost:2002/auth/token"
   },
   "cardTemplate": {
     "publisher": "publisher_test",
     "processVersion": "1",
-    "process": "defaultProcess",
-    "state": "messageState",
-    "severity": "ALARM",
-    "title": { "key": "messageState.title" },
-    "summary": { "key": "messageState.summary" },
-    "data": { "message": "user disconnected" }
+    "process": "connectionSupervisor",
+    "state": "disconnectedUser",
+    "severity": "ALARM"
   },
   "logConfig": {
     "logFolder": "../logs/",
@@ -27,8 +22,8 @@
     { "login": "operator1_fr", "supervisors": ["operator2_fr"] },
     { "login": "operator2_fr", "supervisors": ["operator1_fr"] }
   ],
-  "secondsBetweenConnectionChecks": 10000,
+  "secondsBetweenConnectionChecks": 10,
   "nbOfConsecutiveNotConnectedToSendFirstCard": 3,
-  "nbOfConsecutiveNotConnectedToSendSecondCard": 10,
+  "nbOfConsecutiveNotConnectedToSendSecondCard": 12,
   "adminPort" : 3000
 }

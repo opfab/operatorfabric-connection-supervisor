@@ -1,0 +1,13 @@
+{
+  "id": "connectionSupervisor",
+  "name": "Connection supervisor ",
+  "version": "1",
+  "states": {
+    "disconnectedUser": {
+      "name":  "User disconnected",
+      "description": "User disconnected",
+      "templateName": "template",
+      "acknowledgmentAllowed": "Always"
+    }
+  }
+}

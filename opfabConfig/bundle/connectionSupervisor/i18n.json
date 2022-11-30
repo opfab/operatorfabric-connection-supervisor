@@ -1,0 +1,6 @@
+{
+	"message":{
+		"title": "User {{user}} disconnected",
+		"summary": "User {{user}} disconnected for at least {{minutes}} minutes "
+	}
+}

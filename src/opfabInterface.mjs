@@ -96,13 +96,15 @@ export default class OpfabInterface  {
         });
     };
 
-    async sendCard(disconnectedUser,userRecipients) {
+    async sendCard(disconnectedUser,userRecipients,minutes) {
         await this.#getToken();
         const card = Object.assign({} ,this.#cardTemplate);
         card.startDate = new Date().valueOf();
         card.processInstanceId = disconnectedUser;
         card.userRecipients = userRecipients;
-        card.data =  {"message": `L'utilisateur  ${disconnectedUser} n'est pas connecté depuis plus de 3 minutes`};
+        card.data =  {"user": disconnectedUser ,"minutes": minutes};
+        card.title =  { "key": "message.title", "parameters" : {"user": disconnectedUser}};
+        card.summary =  { "key": "message.summary", "parameters" : {"user": disconnectedUser,"minutes":minutes}};
         const request = {
             method :'post',
             url: this.#opfabPublicationUrl,

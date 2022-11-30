@@ -1,0 +1,10 @@
+{
+  "id" : "connectionSupervisor",
+  "process" : "connectionSupervisor",
+  "stateRights" : [
+    {
+      "state" : "disconnectedUser",
+      "right" : "ReceiveAndWrite"
+    }
+  ]
+}
