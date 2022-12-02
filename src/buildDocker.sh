@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build . -t lfeoperatorfabric/of-connectionsupervisor:0.1.0
+docker build . -t lfeoperatorfabric/of-connection-supervisor:0.1.0
