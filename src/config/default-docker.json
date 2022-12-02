@@ -25,5 +25,6 @@
   "secondsBetweenConnectionChecks": 10,
   "nbOfConsecutiveNotConnectedToSendFirstCard": 3,
   "nbOfConsecutiveNotConnectedToSendSecondCard": 12,
-  "adminPort" : 3000
+  "adminPort" : 3000,
+  "activeOnStartup" : true
 }
