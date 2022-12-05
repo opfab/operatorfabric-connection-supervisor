@@ -53,12 +53,12 @@ export default class OpfabInterface {
         await this.#getToken();
         const response = await this.#sendUsersConnectedRequest();
         const users = new Array();
-        if (response.data) {
+        if (response?.data) {
             response.data.forEach((user) => {
                 users.push(user.login);
             });
-            return users;
         }
+        return users;
     }
 
     async #getToken() {

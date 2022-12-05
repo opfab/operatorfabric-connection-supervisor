@@ -51,7 +51,7 @@ describe('Opfab interface', function () {
             await opfabInterface.getUsersConnected();
             assert.equal(true, false);
         } catch (error) {
-            assert.equal(error.message, 'Impossible to get user connected list');
+            assert.equal(error.message, 'No token provided , http response = ');
         }
     });
 
@@ -59,13 +59,13 @@ describe('Opfab interface', function () {
         const opfabInterface = getOpfabInterface();
         sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
             if (request.url.includes('token')) return Promise.resolve({status: 200, data: {access_token: 'fakeToken'}});
-            else Promise.resolve({status: 400});
+            else return Promise.reject("error message");
         });
         try {
             await opfabInterface.getUsersConnected();
             assert.equal(true, false);
         } catch (error) {
-            assert.equal(error.message, 'Impossible to get user connected list');
+           assert.equal(error,"error message");
         }
     });
 });
