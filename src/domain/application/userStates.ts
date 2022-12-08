@@ -13,14 +13,14 @@ export default class UserStates {
   #consecutiveTimeUserNotConnected = new Map();
   #usersToSupervise = new Array();
 
-  setUsersToSupervise(users) {
+  setUsersToSupervise(users: any) {
     this.#usersToSupervise = users;
     this.#usersToSupervise.forEach((user) =>
       this.#consecutiveTimeUserNotConnected.set(user, 0)
     );
   }
 
-  setUsersConnected(usersConnected) {
+  setUsersConnected(usersConnected : any) {
     this.#usersToSupervise.forEach((user) => {
       if (usersConnected.includes(user))
         this.#consecutiveTimeUserNotConnected.set(user, 0);
@@ -31,7 +31,7 @@ export default class UserStates {
     });
   }
 
-  getUsersNotConnectedForConsecutiveTimes(times) {
+  getUsersNotConnectedForConsecutiveTimes(times : any) {
     const notConnected = new Array();
     for (const entry of this.#consecutiveTimeUserNotConnected.entries()) {
       const user = entry[0];

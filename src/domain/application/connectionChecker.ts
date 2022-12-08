@@ -8,51 +8,53 @@
  * This file is part of the OperatorFabric project.
  */
 
-import UserStates from "./userStates.mjs";
+import e from "express";
+import UserStates from "./userStates";
 
 export default class ConnectionChecker {
 
-  opfabInterface;
+  opfabInterface: any;
   userStates = new UserStates();
-  logger;
-  nbOfConsecutiveNotConnectedToSendFirstCard;
-  nbOfConsecutiveNotConnectedToSendSecondCard;
-  minuteDisconnectedForFirstCard;
-  minuteDisconnectedForSecondCard;
-  supervisorList;
-  userList;
+  logger :any;
+  nbOfConsecutiveNotConnectedToSendFirstCard: any;
+  nbOfConsecutiveNotConnectedToSendSecondCard: any;
+  minuteDisconnectedForFirstCard: any;
+  minuteDisconnectedForSecondCard: any;
+  secondsBetweenConnectionChecks: any;
+  supervisorList: any;
+  userList: any;
 
-  setOpfabInterface(opfabInterface) {
+  setOpfabInterface(opfabInterface: any) {
     this.opfabInterface = opfabInterface; 
     return this;
   }
 
-  setLogger(logger) {
+  setLogger(logger:any) {
     this.logger = logger;
     return this;
   }
 
-  setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks) {
+  setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks: any) {
    this.secondsBetweenConnectionChecks = secondsBetweenConnectionChecks;
    return this;
   }
 
-  setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard) {
+  setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard: any) {
     this.nbOfConsecutiveNotConnectedToSendFirstCard = nbOfConsecutiveNotConnectedToSendFirstCard;
     this.minuteDisconnectedForFirstCard = (this.secondsBetweenConnectionChecks * this.nbOfConsecutiveNotConnectedToSendFirstCard) / 60;
     return this;
   }
 
-  setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard) {
+  setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard:any) {
     this.nbOfConsecutiveNotConnectedToSendSecondCard = nbOfConsecutiveNotConnectedToSendSecondCard;
     this.minuteDisconnectedForSecondCard = (this.secondsBetweenConnectionChecks * nbOfConsecutiveNotConnectedToSendSecondCard) / 60;
     return this;
   }
 
-  setUsersToSupervise(usersToSupervise) {;
+  setUsersToSupervise(usersToSupervise:any) {;
     this.supervisorList = new Map();
     this.userList = [];
-    usersToSupervise.forEach((user) => {
+    usersToSupervise.forEach((user:any) => {
       this.userList.push(user.login);
       this.supervisorList.set(user.login, user.supervisors);
     });
@@ -60,11 +62,15 @@ export default class ConnectionChecker {
     return this
   }
 
+  resetState() {
+    this.userStates.reset();
+  }
+
   async checkConnection () {
     try {
         const users = await this.opfabInterface
             .getUsersConnected()
-            .catch((e) => {this.logger.warn('Impossible to get user connected card ');throw e});
+            .catch((e:Error) => {this.logger.warn('Impossible to get user connected card ');throw e});
         this.logger.info('Users connected : ' + users);
 
         if (users) {
@@ -82,7 +88,7 @@ export default class ConnectionChecker {
             usersNotConnected.forEach(async (user) => {
                 await this.opfabInterface
                     .sendCard(user, this.supervisorList.get(user), this.minuteDisconnectedForFirstCard)
-                    .catch((e) => this.logger.warn('Impossible to send first card ', e));
+                    .catch((e:any) => this.logger.warn('Impossible to send first card ', e));
             });
 
             usersNotConnected = this.userStates.getUsersNotConnectedForConsecutiveTimes(
@@ -98,7 +104,7 @@ export default class ConnectionChecker {
             usersNotConnected.forEach(async (user) => {
                 await this.opfabInterface
                     .sendCard(user, this.supervisorList.get(user), this.minuteDisconnectedForSecondCard)
-                    .catch((e) => this.logger.warn('Impossible to send second card ', e));
+                    .catch((e:any) => this.logger.warn('Impossible to send second card ', e));
             });
         }
     } catch (error) {

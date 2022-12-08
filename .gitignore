@@ -76,8 +76,9 @@ classes
 .classpath
 
 # Opfab specific
-test/node_modules
-src/node_modules
+node_modules
+coverage
+build
 logs
 
 

@@ -1,16 +1,8 @@
-/* Copyright (c) 2022, RTE (http://www.rte-france.com)
- * See AUTHORS.txt
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- * SPDX-License-Identifier: MPL-2.0
- * This file is part of the OperatorFabric project.
- */
+import 'jest'
+import sinon from 'sinon';
+import UserStates from '../src/domain/application/userStates';
+import OpfabInterface from '../src/domain/server-side/opfabInterface';
 
-import assert from 'node:assert';
-import sinon from 'sinon'
-import OpfabInterface from  '../src/domain/server-side/opfabInterface.mjs';
-import UserStates from '../src/domain/application/userStates.mjs';
 
 function getOpfabInterface() {
     return new OpfabInterface()
@@ -21,10 +13,13 @@ function getOpfabInterface() {
         .setOpfabPublicationUrl('test');
 }
 
+
+
 describe('Opfab interface', function () {
+    
     it('Should get one user login when one user connected ', async function () {
         const opfabInterface = getOpfabInterface();
-
+    
         sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
             if (request.url.includes('token')) return Promise.resolve({status: 200, data: {access_token: 'fakeToken'}});
             else {
@@ -34,27 +29,24 @@ describe('Opfab interface', function () {
             }
         });
         const users = await opfabInterface.getUsersConnected();
-        assert.deepEqual(users, ['user1']);
+        expect(users).toEqual(['user1']);
     });
+
 
     it('Should throw exception when impossible to authenticate to opfab ', async function () {
         const opfabInterface = getOpfabInterface();
-        sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
-            if (request.url.includes('token')) Promise.reject('test');
-            else {
-                if (request.headers?.Authorization?.includes('Bearer fakeToken'))
-                    return Promise.resolve({status: 200, data: [{login: 'user1'}]});
-                else return Promise.resolve({status: 400});
-            }
+        sinon.stub(opfabInterface, 'sendRequest').callsFake((request:any) => {
+            return Promise.reject('test');
         });
         try {
             await opfabInterface.getUsersConnected();
-            assert.equal(true, false);
+            // error case 
+            expect(true).toBe(false);
         } catch (error) {
-            assert.equal(error.message, 'No token provided , http response = ');
+            expect(error).toEqual('test');
         }
     });
-
+    
     it('Should throw exception when error in user request ', async function () {
         const opfabInterface = getOpfabInterface();
         sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
@@ -63,40 +55,40 @@ describe('Opfab interface', function () {
         });
         try {
             await opfabInterface.getUsersConnected();
-            assert.equal(true, false);
+            expect(true).toEqual(false);
         } catch (error) {
-           assert.equal(error,"error message");
+           expect(error).toEqual("error message");
         }
     });
-});
+}); 
 
 describe('Users state', function () {
     it('By default should return empty list when no user list to supervise ', function () {
         const toBeNotify = new UserStates();
-        assert.equal(toBeNotify.getUsersNotConnectedForConsecutiveTimes().length, 0);
+        expect(toBeNotify.getUsersNotConnectedForConsecutiveTimes(1).length).toEqual(0);
     });
 
     it('Should return empty list when user list to supervise and no connection information ', function () {
         const userStates = new UserStates();
         userStates.setUsersToSupervise(['user1', 'user2']);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(1).length, 0);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(2).length, 0);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(1).length).toEqual(0);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(2).length).toEqual(0);
     });
 
     it('By default should return empty list when user list to supervise and user connection ok  ', function () {
         const userStates = new UserStates();
         userStates.setUsersToSupervise(['user1', 'user2']);
         userStates.setUsersConnected(['user1', 'user2']);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(1).length, 0);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(2).length, 0);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(1).length).toEqual(0);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(2).length).toEqual(0);
     });
 
     it('Should return 2 user if 2 not connected once ', function () {
         const userStates = new UserStates();
         userStates.setUsersToSupervise(['user1', 'user2']);
         userStates.setUsersConnected([]);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(1).length, 2);
-        assert.equal(userStates.getUsersNotConnectedForConsecutiveTimes(2).length, 0);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(1).length).toEqual(2);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(2).length).toEqual(0);
     });
 
     it('Should return user not connected for x times  ', function () {
@@ -106,9 +98,9 @@ describe('Users state', function () {
         userStates.setUsersConnected(['user1']);
         userStates.setUsersConnected(['user1']);
         userStates.setUsersConnected([]);
-        assert.deepEqual(userStates.getUsersNotConnectedForConsecutiveTimes(1), ['user1']);
-        assert.deepEqual(userStates.getUsersNotConnectedForConsecutiveTimes(2), []);
-        assert.deepEqual(userStates.getUsersNotConnectedForConsecutiveTimes(3), []);
-        assert.deepEqual(userStates.getUsersNotConnectedForConsecutiveTimes(4), ['user2']);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(1)).toEqual(['user1']);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(2)).toEqual([]);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(3)).toEqual([]);
+        expect(userStates.getUsersNotConnectedForConsecutiveTimes(4)).toEqual(['user2']);
     });
 });

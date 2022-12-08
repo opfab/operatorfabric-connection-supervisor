@@ -7,20 +7,19 @@
  * This file is part of the OperatorFabric project.
  */
 
-import OpfabInterface from './domain/server-side/opfabInterface.mjs';
-import ConnectionChecker from './domain/application/connectionChecker.mjs';
-import config from 'config';
-import logger from './domain/server-side/logger.mjs';
 import express from 'express';
+import config from 'config';
+import logger from './domain/server-side/logger';
+import OpfabInterface from './domain/server-side/opfabInterface';
+import ConnectionChecker from './domain/application/connectionChecker';
 
 const app = express();
 const adminPort = config.get('adminPort');
 const usersToSupervise = config.get('usersToSupervise');
-const secondsBetweenConnectionChecks = config.get('secondsBetweenConnectionChecks');
+const secondsBetweenConnectionChecks: number = config.get('secondsBetweenConnectionChecks');
 const nbOfConsecutiveNotConnectedToSendFirstCard = config.get('nbOfConsecutiveNotConnectedToSendFirstCard');
 const nbOfConsecutiveNotConnectedToSendSecondCard = config.get('nbOfConsecutiveNotConnectedToSendSecondCard');
 let active = config.get('activeOnStartup');
-
 
 
 const opfabInterface = new OpfabInterface()
@@ -31,13 +30,14 @@ const opfabInterface = new OpfabInterface()
     .setOpfabGetTokenUrl(config.get('opfab.getTokenUrl'))
     .setCardTemplate(config.get('cardTemplate'));
 
+
 const connectionChecker = new ConnectionChecker()
-.setLogger(logger)
-.setOpfabInterface(opfabInterface)
-.setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks)
-.setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard)
-.setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard)
-.setUsersToSupervise(usersToSupervise)
+    .setLogger(logger)
+    .setOpfabInterface(opfabInterface)
+    .setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks)
+    .setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard)
+    .setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard)
+    .setUsersToSupervise(usersToSupervise)
 
 app.get('/status', (req, res) => {
     res.send(active);
@@ -52,7 +52,7 @@ app.get('/start', (req, res) => {
 app.get('/stop', (req, res) => {
     logger.info('Stop supervisor asked');
     active = false;
-    userStates.reset();
+    connectionChecker.resetState();
     res.send('Stop supervisor');
 });
 
@@ -61,9 +61,6 @@ app.listen(adminPort, () => {
 });
 
 logger.info('Start');
-
-
-
 
 checkRegulary();
 
