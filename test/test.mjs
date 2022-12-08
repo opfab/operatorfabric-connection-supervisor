@@ -9,8 +9,8 @@
 
 import assert from 'node:assert';
 import sinon from 'sinon'
-import OpfabInterface from  '../src/opfabInterface.mjs';
-import UserStates from '../src/userStates.mjs';
+import OpfabInterface from  '../src/domain/server-side/opfabInterface.mjs';
+import UserStates from '../src/domain/application/userStates.mjs';
 
 function getOpfabInterface() {
     return new OpfabInterface()

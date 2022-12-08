@@ -7,10 +7,10 @@
  * This file is part of the OperatorFabric project.
  */
 
-import UserStates from './userStates.mjs';
-import OpfabInterface from './opfabInterface.mjs';
+import OpfabInterface from './domain/server-side/opfabInterface.mjs';
+import ConnectionChecker from './domain/application/connectionChecker.mjs';
 import config from 'config';
-import logger from './logger.mjs';
+import logger from './domain/server-side/logger.mjs';
 import express from 'express';
 
 const app = express();
@@ -19,20 +19,9 @@ const usersToSupervise = config.get('usersToSupervise');
 const secondsBetweenConnectionChecks = config.get('secondsBetweenConnectionChecks');
 const nbOfConsecutiveNotConnectedToSendFirstCard = config.get('nbOfConsecutiveNotConnectedToSendFirstCard');
 const nbOfConsecutiveNotConnectedToSendSecondCard = config.get('nbOfConsecutiveNotConnectedToSendSecondCard');
-const minuteDisconnectedForFirstCard =
-    (secondsBetweenConnectionChecks * nbOfConsecutiveNotConnectedToSendFirstCard) / 60;
-const minuteDisconnectedForSecondCard =
-    (secondsBetweenConnectionChecks * nbOfConsecutiveNotConnectedToSendSecondCard) / 60;
 let active = config.get('activeOnStartup');
 
-const userStates = new UserStates();
-const userList = [];
-const supervisorList = new Map();
-usersToSupervise.forEach((user) => {
-    userList.push(user.login);
-    supervisorList.set(user.login, user.supervisors);
-});
-userStates.setUsersToSupervise(userList);
+
 
 const opfabInterface = new OpfabInterface()
     .setLogin(config.get('opfab.login'))
@@ -41,6 +30,14 @@ const opfabInterface = new OpfabInterface()
     .setOpfabPublicationUrl(config.get('opfab.publicationUrl'))
     .setOpfabGetTokenUrl(config.get('opfab.getTokenUrl'))
     .setCardTemplate(config.get('cardTemplate'));
+
+const connectionChecker = new ConnectionChecker()
+.setLogger(logger)
+.setOpfabInterface(opfabInterface)
+.setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks)
+.setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard)
+.setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard)
+.setUsersToSupervise(usersToSupervise)
 
 app.get('/status', (req, res) => {
     res.send(active);
@@ -65,53 +62,16 @@ app.listen(adminPort, () => {
 
 logger.info('Start');
 
+
+
+
 checkRegulary();
+
 
 async function checkRegulary() {
     if (active) {
-        try {
-            const users = await opfabInterface
-                .getUsersConnected()
-                .catch((e) => {logger.warn('Impossible to get user connected card ');throw e});
-            logger.info('Users connected : ' + users);
-
-            if (users) {
-                userStates.setUsersConnected(users);
-                let usersNotConnected = userStates.getUsersNotConnectedForConsecutiveTimes(
-                    nbOfConsecutiveNotConnectedToSendFirstCard
-                );
-                if (usersNotConnected.length > 0)
-                    logger.info(
-                        usersNotConnected +
-                            ' is(are) not connected for ' +
-                            nbOfConsecutiveNotConnectedToSendFirstCard +
-                            ' consecutive times'
-                    );
-                usersNotConnected.forEach(async (user) => {
-                    await opfabInterface
-                        .sendCard(user, supervisorList.get(user), minuteDisconnectedForFirstCard)
-                        .catch((e) => logger.warn('Impossible to send first card ', e));
-                });
-
-                usersNotConnected = userStates.getUsersNotConnectedForConsecutiveTimes(
-                    nbOfConsecutiveNotConnectedToSendSecondCard
-                );
-                if (usersNotConnected.length > 0)
-                    logger.info(
-                        usersNotConnected +
-                            ' is(are) not connected for ' +
-                            nbOfConsecutiveNotConnectedToSendSecondCard +
-                            ' consecutive times'
-                    );
-                usersNotConnected.forEach(async (user) => {
-                    await opfabInterface
-                        .sendCard(user, supervisorList.get(user), minuteDisconnectedForSecondCard)
-                        .catch((e) => logger.warn('Impossible to send second card ', e));
-                });
-            }
-        } catch (error) {
-            logger.warn('Error in processing : ', error);
-        }
+        connectionChecker.checkConnection();      
     }
     setTimeout(() => checkRegulary(), secondsBetweenConnectionChecks * 1000);
 }
+ 
