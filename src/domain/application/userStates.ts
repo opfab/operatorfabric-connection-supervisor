@@ -10,30 +10,30 @@
 
 export default class UserStates {
   
-  #consecutiveTimeUserNotConnected = new Map();
-  #usersToSupervise = new Array();
+  private consecutiveTimeUserNotConnected = new Map();
+  private usersToSupervise = new Array();
 
-  setUsersToSupervise(users: any) {
-    this.#usersToSupervise = users;
-    this.#usersToSupervise.forEach((user) =>
-      this.#consecutiveTimeUserNotConnected.set(user, 0)
+  public setUsersToSupervise(users: any) {
+    this.usersToSupervise = users;
+    this.usersToSupervise.forEach((user) =>
+      this.consecutiveTimeUserNotConnected.set(user, 0)
     );
   }
 
-  setUsersConnected(usersConnected : any) {
-    this.#usersToSupervise.forEach((user) => {
+  public setUsersConnected(usersConnected : any) {
+    this.usersToSupervise.forEach((user) => {
       if (usersConnected.includes(user))
-        this.#consecutiveTimeUserNotConnected.set(user, 0);
+        this.consecutiveTimeUserNotConnected.set(user, 0);
       else {
-        let nbDisconnect = this.#consecutiveTimeUserNotConnected.get(user);
-        this.#consecutiveTimeUserNotConnected.set(user, nbDisconnect + 1);
+        let nbDisconnect = this.consecutiveTimeUserNotConnected.get(user);
+        this.consecutiveTimeUserNotConnected.set(user, nbDisconnect + 1);
       }
     });
   }
 
-  getUsersNotConnectedForConsecutiveTimes(times : any) {
+  public getUsersNotConnectedForConsecutiveTimes(times : any) {
     const notConnected = new Array();
-    for (const entry of this.#consecutiveTimeUserNotConnected.entries()) {
+    for (const entry of this.consecutiveTimeUserNotConnected.entries()) {
       const user = entry[0];
       const nb = entry[1];
       if (nb === times) notConnected.push(user);
@@ -41,9 +41,9 @@ export default class UserStates {
     return notConnected;
   }
 
-  reset() {
-    this.#usersToSupervise.forEach((user) =>
-      this.#consecutiveTimeUserNotConnected.set(user, 0)
+  public reset() {
+    this.usersToSupervise.forEach((user) =>
+      this.consecutiveTimeUserNotConnected.set(user, 0)
     );
   }
 }

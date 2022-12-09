@@ -11,7 +11,7 @@ import express from 'express';
 import config from 'config';
 import logger from './domain/server-side/logger';
 import OpfabInterface from './domain/server-side/opfabInterface';
-import ConnectionChecker from './domain/application/connectionChecker';
+import ConnectionSupervisorService from './domain/client-side/connectionSupervisorService';
 
 const app = express();
 const adminPort = config.get('adminPort');
@@ -19,7 +19,7 @@ const usersToSupervise = config.get('usersToSupervise');
 const secondsBetweenConnectionChecks: number = config.get('secondsBetweenConnectionChecks');
 const nbOfConsecutiveNotConnectedToSendFirstCard = config.get('nbOfConsecutiveNotConnectedToSendFirstCard');
 const nbOfConsecutiveNotConnectedToSendSecondCard = config.get('nbOfConsecutiveNotConnectedToSendSecondCard');
-let active = config.get('activeOnStartup');
+const activeOnStartUp = config.get('activeOnStartup');
 
 
 const opfabInterface = new OpfabInterface()
@@ -31,28 +31,28 @@ const opfabInterface = new OpfabInterface()
     .setCardTemplate(config.get('cardTemplate'));
 
 
-const connectionChecker = new ConnectionChecker()
-    .setLogger(logger)
-    .setOpfabInterface(opfabInterface)
-    .setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks)
-    .setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard)
-    .setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard)
-    .setUsersToSupervise(usersToSupervise)
+const supervisorConfig: any = { 
+    secondsBetweenConnectionChecks: secondsBetweenConnectionChecks,
+    nbOfConsecutiveNotConnectedToSendFirstCard: nbOfConsecutiveNotConnectedToSendFirstCard,
+    nbOfConsecutiveNotConnectedToSendSecondCard: nbOfConsecutiveNotConnectedToSendSecondCard,
+    usersToSupervise: usersToSupervise
+}
+
+const connectionSupervisorService = new ConnectionSupervisorService(supervisorConfig,opfabInterface,logger)
 
 app.get('/status', (req, res) => {
-    res.send(active);
+    res.send(activeOnStartUp);
 });
 
 app.get('/start', (req, res) => {
     logger.info('Start supervisor asked');
-    active = true;
+    connectionSupervisorService.start();
     res.send('Start supervisor');
 });
 
 app.get('/stop', (req, res) => {
     logger.info('Stop supervisor asked');
-    active = false;
-    connectionChecker.resetState();
+    connectionSupervisorService.stop();
     res.send('Stop supervisor');
 });
 
@@ -60,15 +60,6 @@ app.listen(adminPort, () => {
     logger.info(`Opfab connection supervisor listening on port ${adminPort}`);
 });
 
-logger.info('Start');
+logger.info('Application started');
 
-checkRegulary();
-
-
-async function checkRegulary() {
-    if (active) {
-        connectionChecker.checkConnection();      
-    }
-    setTimeout(() => checkRegulary(), secondsBetweenConnectionChecks * 1000);
-}
- 
+if (activeOnStartUp)  connectionSupervisorService.start();

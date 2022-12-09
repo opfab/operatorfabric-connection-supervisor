@@ -8,50 +8,49 @@
  * This file is part of the OperatorFabric project.
  */
 
-import e from "express";
 import UserStates from "./userStates";
 
 export default class ConnectionChecker {
 
-  opfabInterface: any;
-  userStates = new UserStates();
-  logger :any;
-  nbOfConsecutiveNotConnectedToSendFirstCard: any;
-  nbOfConsecutiveNotConnectedToSendSecondCard: any;
-  minuteDisconnectedForFirstCard: any;
-  minuteDisconnectedForSecondCard: any;
-  secondsBetweenConnectionChecks: any;
-  supervisorList: any;
-  userList: any;
+  private opfabInterface: any;
+  private userStates = new UserStates();
+  private logger :any;
+  private nbOfConsecutiveNotConnectedToSendFirstCard: any;
+  private nbOfConsecutiveNotConnectedToSendSecondCard: any;
+  private minuteDisconnectedForFirstCard: any;
+  private minuteDisconnectedForSecondCard: any;
+  private secondsBetweenConnectionChecks: any;
+  private supervisorList: any;
+  private userList: any;
 
-  setOpfabInterface(opfabInterface: any) {
+  public setOpfabInterface(opfabInterface: any) {
     this.opfabInterface = opfabInterface; 
     return this;
   }
 
-  setLogger(logger:any) {
+  public setLogger(logger:any) {
     this.logger = logger;
     return this;
   }
 
-  setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks: any) {
+  public setSecondsBetweenConnectionChecks(secondsBetweenConnectionChecks: any) {
    this.secondsBetweenConnectionChecks = secondsBetweenConnectionChecks;
    return this;
   }
 
-  setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard: any) {
+  public setNbOfConsecutiveNotConnectedToSendFirstCard(nbOfConsecutiveNotConnectedToSendFirstCard: any) {
     this.nbOfConsecutiveNotConnectedToSendFirstCard = nbOfConsecutiveNotConnectedToSendFirstCard;
     this.minuteDisconnectedForFirstCard = (this.secondsBetweenConnectionChecks * this.nbOfConsecutiveNotConnectedToSendFirstCard) / 60;
     return this;
   }
 
-  setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard:any) {
+  public setNbOfConsecutiveNotConnectedToSendSecondCard(nbOfConsecutiveNotConnectedToSendSecondCard:any) {
     this.nbOfConsecutiveNotConnectedToSendSecondCard = nbOfConsecutiveNotConnectedToSendSecondCard;
     this.minuteDisconnectedForSecondCard = (this.secondsBetweenConnectionChecks * nbOfConsecutiveNotConnectedToSendSecondCard) / 60;
     return this;
   }
 
-  setUsersToSupervise(usersToSupervise:any) {;
+  public setUsersToSupervise(usersToSupervise:any) {;
     this.supervisorList = new Map();
     this.userList = [];
     usersToSupervise.forEach((user:any) => {
@@ -62,15 +61,15 @@ export default class ConnectionChecker {
     return this
   }
 
-  resetState() {
+  public resetState() {
     this.userStates.reset();
   }
 
-  async checkConnection () {
+  public async checkConnection () {
     try {
         const users = await this.opfabInterface
             .getUsersConnected()
-            .catch((e:Error) => {this.logger.warn('Impossible to get user connected card ');throw e});
+            .catch((e:any) => {this.logger.warn('Impossible to get user connected card ' + JSON.stringify(e));throw e});
         this.logger.info('Users connected : ' + users);
 
         if (users) {

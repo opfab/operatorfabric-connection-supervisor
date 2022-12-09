@@ -19,39 +19,39 @@ export default class OpfabInterface {
     private opfabGetTokenUrl:string = '';
     private cardTemplate: any = '';
 
-    setLogin(login:string) {
+    public setLogin(login:string) {
         this.login = login;
         return this;
     }
 
-    setPassword(password:string) {
+    public setPassword(password:string) {
         this.password = password;
         return this;
     }
 
-    setOpfabGetTokenUrl(opfabGetTokenUrl:string) {
+    public setOpfabGetTokenUrl(opfabGetTokenUrl:string) {
         this.opfabGetTokenUrl = opfabGetTokenUrl;
         return this;
     }
 
-    setOpfabGetUsersConnectedUrl(opfabGetUsersConnectedUrl:string) {
+    public setOpfabGetUsersConnectedUrl(opfabGetUsersConnectedUrl:string) {
         this.opfabGetUsersConnectedUrl = opfabGetUsersConnectedUrl;
         return this;
     }
 
-    setOpfabPublicationUrl(opfabPublicationUrl:string) {
+    public setOpfabPublicationUrl(opfabPublicationUrl:string) {
         this.opfabPublicationUrl = opfabPublicationUrl;
         return this;
     }
 
-    setCardTemplate(cardTemplate:any) {
+    public setCardTemplate(cardTemplate:any) {
         this.cardTemplate = cardTemplate;
         return this;
     }
 
-    async getUsersConnected() {
-        await this.#getToken();
-        const response = await this.#sendUsersConnectedRequest();
+    public async getUsersConnected() {
+        await this.getToken();
+        const response = await this.sendUsersConnectedRequest();
         const users = new Array();
         if (response?.data) {
             response.data.forEach((user:any) => {
@@ -61,7 +61,7 @@ export default class OpfabInterface {
         return users;
     }
 
-    async #getToken() {
+    private async getToken() {
         if (new Date().valueOf() - this.tokenAge < 60000) return;
 
         const response = await this.sendRequest({
@@ -74,11 +74,11 @@ export default class OpfabInterface {
         this.tokenAge = new Date().valueOf();
     }
 
-    sendRequest(request:any) {
+    public sendRequest(request:any) {
         return <Promise<any>> axios(request);
     }
 
-    #sendUsersConnectedRequest() {
+    private sendUsersConnectedRequest() {
         return this.sendRequest({
             method: 'get',
             url: this.opfabGetUsersConnectedUrl,
@@ -88,8 +88,8 @@ export default class OpfabInterface {
         });
     }
 
-    async sendCard(disconnectedUser:Array<string>, userRecipients:Array<string>, minutes:number) {
-        await this.#getToken();
+    public async sendCard(disconnectedUser:Array<string>, userRecipients:Array<string>, minutes:number) {
+        await this.getToken();
         const card = Object.assign({}, this.cardTemplate);
         card.startDate = new Date().valueOf();
         card.processInstanceId = disconnectedUser;
