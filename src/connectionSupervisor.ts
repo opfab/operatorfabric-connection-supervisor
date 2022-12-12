@@ -12,15 +12,15 @@ import config from 'config';
 import logger from './domain/server-side/logger';
 import OpfabInterface from './domain/server-side/opfabInterface';
 import ConnectionSupervisorService from './domain/client-side/connectionSupervisorService';
+import ConfigDTO from './domain/client-side/configDTO';
 
 const app = express();
 const adminPort = config.get('adminPort');
-const usersToSupervise = config.get('usersToSupervise');
+const usersToSupervise : any[] = config.get('usersToSupervise');
 const secondsBetweenConnectionChecks: number = config.get('secondsBetweenConnectionChecks');
-const nbOfConsecutiveNotConnectedToSendFirstCard = config.get('nbOfConsecutiveNotConnectedToSendFirstCard');
-const nbOfConsecutiveNotConnectedToSendSecondCard = config.get('nbOfConsecutiveNotConnectedToSendSecondCard');
+const nbOfConsecutiveNotConnectedToSendFirstCard : number = config.get('nbOfConsecutiveNotConnectedToSendFirstCard');
+const nbOfConsecutiveNotConnectedToSendSecondCard : number = config.get('nbOfConsecutiveNotConnectedToSendSecondCard');
 const activeOnStartUp = config.get('activeOnStartup');
-
 
 const opfabInterface = new OpfabInterface()
     .setLogin(config.get('opfab.login'))
@@ -28,17 +28,16 @@ const opfabInterface = new OpfabInterface()
     .setOpfabGetUsersConnectedUrl(config.get('opfab.consultationUrl'))
     .setOpfabPublicationUrl(config.get('opfab.publicationUrl'))
     .setOpfabGetTokenUrl(config.get('opfab.getTokenUrl'))
-    .setCardTemplate(config.get('cardTemplate'));
+    .setCardTemplate(config.get('cardTemplate'))
+    .setLogger(logger);
 
+const supervisorConfig = new ConfigDTO();
+supervisorConfig.secondsBetweenConnectionChecks = secondsBetweenConnectionChecks;
+supervisorConfig.nbOfConsecutiveNotConnectedToSendFirstCard = nbOfConsecutiveNotConnectedToSendFirstCard;
+supervisorConfig.nbOfConsecutiveNotConnectedToSendSecondCard =  nbOfConsecutiveNotConnectedToSendSecondCard;
+supervisorConfig.usersToSupervise =  usersToSupervise;
 
-const supervisorConfig: any = { 
-    secondsBetweenConnectionChecks: secondsBetweenConnectionChecks,
-    nbOfConsecutiveNotConnectedToSendFirstCard: nbOfConsecutiveNotConnectedToSendFirstCard,
-    nbOfConsecutiveNotConnectedToSendSecondCard: nbOfConsecutiveNotConnectedToSendSecondCard,
-    usersToSupervise: usersToSupervise
-}
-
-const connectionSupervisorService = new ConnectionSupervisorService(supervisorConfig,opfabInterface,logger)
+const connectionSupervisorService = new ConnectionSupervisorService(supervisorConfig, opfabInterface, logger);
 
 app.get('/status', (req, res) => {
     res.send(activeOnStartUp);
@@ -62,4 +61,4 @@ app.listen(adminPort, () => {
 
 logger.info('Application started');
 
-if (activeOnStartUp)  connectionSupervisorService.start();
+if (activeOnStartUp) connectionSupervisorService.start();

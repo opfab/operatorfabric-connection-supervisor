@@ -8,57 +8,75 @@
  */
 
 import axios from 'axios';
+import {Logger} from 'winston';
+import GetConnectedUsersResponse from './getConnectedUsersResponse';
 
 export default class OpfabInterface {
-    private token:string  = '';
-    private tokenAge:number = 0;
-    private login: string= '';
+    private token: string = '';
+    private tokenAge: number = 0;
+    private login: string = '';
     private password: string = '';
     private opfabGetUsersConnectedUrl: string = '';
     private opfabPublicationUrl: string = '';
-    private opfabGetTokenUrl:string = '';
+    private opfabGetTokenUrl: string = '';
     private cardTemplate: any = '';
+    private logger: any;
 
-    public setLogin(login:string) {
+    public setLogin(login: string) {
         this.login = login;
         return this;
     }
 
-    public setPassword(password:string) {
+    public setPassword(password: string) {
         this.password = password;
         return this;
     }
 
-    public setOpfabGetTokenUrl(opfabGetTokenUrl:string) {
+    public setOpfabGetTokenUrl(opfabGetTokenUrl: string) {
         this.opfabGetTokenUrl = opfabGetTokenUrl;
         return this;
     }
 
-    public setOpfabGetUsersConnectedUrl(opfabGetUsersConnectedUrl:string) {
+    public setOpfabGetUsersConnectedUrl(opfabGetUsersConnectedUrl: string) {
         this.opfabGetUsersConnectedUrl = opfabGetUsersConnectedUrl;
         return this;
     }
 
-    public setOpfabPublicationUrl(opfabPublicationUrl:string) {
+    public setOpfabPublicationUrl(opfabPublicationUrl: string) {
         this.opfabPublicationUrl = opfabPublicationUrl;
         return this;
     }
 
-    public setCardTemplate(cardTemplate:any) {
+    public setCardTemplate(cardTemplate: any) {
         this.cardTemplate = cardTemplate;
         return this;
     }
 
-    public async getUsersConnected() {
-        await this.getToken();
-        const response = await this.sendUsersConnectedRequest();
-        const users = new Array();
-        if (response?.data) {
-            response.data.forEach((user:any) => {
-                users.push(user.login);
-            });
+    public setLogger(logger: any) {
+        this.logger = logger;
+        return this;
+    }
+
+    public async getUsersConnected(): Promise<GetConnectedUsersResponse> {
+        try {
+            await this.getToken();
+            const response = await this.sendUsersConnectedRequest();
+            const users = new Array();
+            if (response?.data) {
+                response.data.forEach((user: any) => {
+                    users.push(user.login);
+                });
+                return new GetConnectedUsersResponse(users, true);
+            }
+            else {
+                this.logger.warn("No data in HTTP response")
+                return new GetConnectedUsersResponse(null, false);
+            }
+        } catch (e) {
+            this.logger.warn('Impossible to get connected users', e);
+            return new GetConnectedUsersResponse(null, false);
         }
-        return users;
+       
     }
 
     private async getToken() {
@@ -74,8 +92,8 @@ export default class OpfabInterface {
         this.tokenAge = new Date().valueOf();
     }
 
-    public sendRequest(request:any) {
-        return <Promise<any>> axios(request);
+    public sendRequest(request: any) {
+        return <Promise<any>>axios(request);
     }
 
     private sendUsersConnectedRequest() {
@@ -88,23 +106,27 @@ export default class OpfabInterface {
         });
     }
 
-    public async sendCard(disconnectedUser:Array<string>, userRecipients:Array<string>, minutes:number) {
-        await this.getToken();
-        const card = Object.assign({}, this.cardTemplate);
-        card.startDate = new Date().valueOf();
-        card.processInstanceId = disconnectedUser;
-        card.userRecipients = userRecipients;
-        card.data = {user: disconnectedUser, minutes: minutes};
-        card.title = {key: 'message.title', parameters: {user: disconnectedUser}};
-        card.summary = {key: 'message.summary', parameters: {user: disconnectedUser, minutes: minutes}};
-        const request = {
-            method: 'post',
-            url: this.opfabPublicationUrl,
-            data: card,
-            headers: {
-                Authorization: 'Bearer ' + this.token
-            }
-        };
-        return this.sendRequest(request);
+    public async sendCard(disconnectedUser: string, userRecipients: Array<string>, minutes: number) {
+        try {
+            await this.getToken();
+            const card = Object.assign({}, this.cardTemplate);
+            card.startDate = new Date().valueOf();
+            card.processInstanceId = disconnectedUser;
+            card.userRecipients = userRecipients;
+            card.data = {user: disconnectedUser, minutes: minutes};
+            card.title = {key: 'message.title', parameters: {user: disconnectedUser}};
+            card.summary = {key: 'message.summary', parameters: {user: disconnectedUser, minutes: minutes}};
+            const request = {
+                method: 'post',
+                url: this.opfabPublicationUrl,
+                data: card,
+                headers: {
+                    Authorization: 'Bearer ' + this.token
+                }
+            };
+            await this.sendRequest(request);
+        } catch (exc) {
+            this.logger.warn('Impossible to send card', exc);
+        }
     }
 }

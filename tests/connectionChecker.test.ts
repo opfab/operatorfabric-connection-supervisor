@@ -2,23 +2,25 @@ import 'jest'
 import OpfabInterface from '../src/domain/server-side/opfabInterface';
 import ConnectionChecker from '../src/domain/application/connectionChecker'
 import logger from '../src/domain/server-side/logger';
+import GetConnectedUsersResponse from '../src/domain/server-side/getConnectedUsersResponse';
 
 
 
 class OpfabInterfaceStub extends OpfabInterface {
 
-public disconnectedUser:Array<string> = new Array();
+public disconnectedUser:string ;
 public userRecipients: Array<string> = new Array();
 public minutes: number = 0;
 public numberOfCardSend =0;
+public isResponseValid = true;
 
 public userConnected: Array<string> = new Array();
 
 async getUsersConnected() {
-        return this.userConnected;
+        return new GetConnectedUsersResponse(this.userConnected,this.isResponseValid);
     }
 
-async sendCard(disconnectedUser:Array<string>, userRecipients:Array<string>, minutes:number) {
+async sendCard(disconnectedUser:string, userRecipients:Array<string>, minutes:number) {
     
     this.numberOfCardSend++;
     this.disconnectedUser = disconnectedUser;
@@ -167,6 +169,26 @@ describe('connection checker', function () {
         expect(opfabInterfaceStub.userRecipients).toEqual(["user2"]);
         await connectionChecker.checkConnection();
         expect(opfabInterfaceStub.numberOfCardSend).toEqual(2);
+    });
+
+    it ('Should send a card after 3 times disconnected user1 with 2 error in get user connected ' , async function() {
+       
+        await connectionChecker.checkConnection();
+        expect(opfabInterfaceStub.numberOfCardSend).toEqual(0);
+        opfabInterfaceStub.isResponseValid = false;
+        await connectionChecker.checkConnection();
+        expect(opfabInterfaceStub.numberOfCardSend).toEqual(0);
+        await connectionChecker.checkConnection();
+        expect(opfabInterfaceStub.numberOfCardSend).toEqual(0);
+        opfabInterfaceStub.isResponseValid = true;
+        await connectionChecker.checkConnection();
+        expect(opfabInterfaceStub.numberOfCardSend).toEqual(0);
+        await connectionChecker.checkConnection();
+        expect(opfabInterfaceStub.numberOfCardSend).toEqual(1);
+        expect(opfabInterfaceStub.disconnectedUser).toEqual("user1");
+        expect(opfabInterfaceStub.userRecipients).toEqual(["user2"]);
+        expect(opfabInterfaceStub.minutes).toEqual(6);
+
     });
 
 })

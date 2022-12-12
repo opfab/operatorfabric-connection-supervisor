@@ -1,7 +1,8 @@
-import 'jest'
+import 'jest';
 import sinon from 'sinon';
+import GetConnectedUsersResponse from '../src/domain/server-side/getConnectedUsersResponse';
 import OpfabInterface from '../src/domain/server-side/opfabInterface';
-
+import logger from '../src/domain/server-side/logger';
 
 function getOpfabInterface() {
     return new OpfabInterface()
@@ -9,15 +10,14 @@ function getOpfabInterface() {
         .setPassword('test')
         .setOpfabGetTokenUrl('tokenurl')
         .setOpfabGetUsersConnectedUrl('test')
-        .setOpfabPublicationUrl('test');
+        .setOpfabPublicationUrl('test')
+        .setLogger(logger);
 }
 
-
 describe('Opfab interface', function () {
-    
     it('Should get one user login when one user connected ', async function () {
         const opfabInterface = getOpfabInterface();
-    
+
         sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
             if (request.url.includes('token')) return Promise.resolve({status: 200, data: {access_token: 'fakeToken'}});
             else {
@@ -27,35 +27,25 @@ describe('Opfab interface', function () {
             }
         });
         const users = await opfabInterface.getUsersConnected();
-        expect(users).toEqual(['user1']);
+        expect(users).toEqual(new GetConnectedUsersResponse(['user1'], true));
     });
 
-
-    it('Should throw exception when impossible to authenticate to opfab ', async function () {
+    it('Should return invalid reponse  when impossible to authenticate to opfab ', async function () {
         const opfabInterface = getOpfabInterface();
-        sinon.stub(opfabInterface, 'sendRequest').callsFake((request:any) => {
+        sinon.stub(opfabInterface, 'sendRequest').callsFake((request: any) => {
             return Promise.reject('test');
         });
-        try {
-            await opfabInterface.getUsersConnected();
-            // error case 
-            expect(true).toBe(false);
-        } catch (error) {
-            expect(error).toEqual('test');
-        }
+        const getConnectedUsersResponse = await opfabInterface.getUsersConnected();
+        expect(getConnectedUsersResponse.isValid()).toBe(false);
     });
-    
-    it('Should throw exception when error in user request ', async function () {
+
+    it('Should return invalid reponse  when error in user request ', async function () {
         const opfabInterface = getOpfabInterface();
         sinon.stub(opfabInterface, 'sendRequest').callsFake((request) => {
             if (request.url.includes('token')) return Promise.resolve({status: 200, data: {access_token: 'fakeToken'}});
-            else return Promise.reject("error message");
+            else return Promise.reject('error message');
         });
-        try {
-            await opfabInterface.getUsersConnected();
-            expect(true).toEqual(false);
-        } catch (error) {
-           expect(error).toEqual("error message");
-        }
+        const getConnectedUsersResponse = await opfabInterface.getUsersConnected();
+        expect(getConnectedUsersResponse.isValid()).toBe(false);
     });
-}); 
+});
