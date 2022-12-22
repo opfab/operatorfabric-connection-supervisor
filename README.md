@@ -5,8 +5,6 @@ Service to supervise opfab connected users
 
 ## Dev commands
 
-
-
 Build  :
  
 ```
@@ -29,4 +27,12 @@ Testing :
 ```
 npm run test 
 ```
+
+Docker build: in docker/ 
+```
+buildDocker.sh 
+```
+
+
+
 

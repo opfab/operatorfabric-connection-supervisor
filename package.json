@@ -1,6 +1,6 @@
 {
   "name": "opfab-supervisor",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "opfab supervisor",
   "main": "connectionSupervisor.js",
   "scripts": {
